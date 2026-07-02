@@ -4,6 +4,7 @@ A conversational AI that answers questions about **movies, TV shows, anime, and 
 
 > Ask things like *"Who directed Spirited Away?"*, *"How many episodes does Attack on Titan have?"*, or *"What anime should I watch if I liked Death Note?"* and get an answer backed by an actual source.
 
+Demo: [CLICK HERE](https://moan-rag.pages.dev/)
 ---
 
 ## Why This Project?
