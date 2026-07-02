@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineAI — Movie & Anime Q&A</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0D0D14;
+    --surface: #13131F;
+    --surface2: #1A1A2E;
+    --pink: #E63B7A;
+    --purple: #7B5CFA;
+    --text: #F0EFF5;
+    --muted: #6B6A80;
+    --border: rgba(255,255,255,0.07);
+    --card-border: rgba(255,255,255,0.09);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 5%;
+    background: rgba(13,13,20,0.7);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: .08em;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    color: var(--muted); font-size: 14px; text-decoration: none;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 5% 80px;
+    position: relative; overflow: hidden;
+  }
+
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(90px); opacity: 0.28;
+    pointer-events: none;
+  }
+  .orb-pink {
+    width: 600px; height: 600px;
+    background: var(--pink);
+    top: -100px; right: -150px;
+    animation: driftPink 9s ease-in-out infinite alternate;
+  }
+  .orb-purple {
+    width: 500px; height: 500px;
+    background: var(--purple);
+    bottom: -80px; left: -120px;
+    animation: driftPurple 11s ease-in-out infinite alternate;
+  }
+
+  @keyframes driftPink {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(-60px, 60px) scale(1.1); }
+  }
+  @keyframes driftPurple {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(50px, -40px) scale(1.08); }
+  }
+
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 12px; font-weight: 500; letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--pink);
+    border: 1px solid rgba(230,59,122,0.3);
+    border-radius: 100px;
+    padding: 5px 16px;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(64px, 10vw, 120px);
+    line-height: 0.95;
+    letter-spacing: .03em;
+    margin-bottom: 24px;
+  }
+  .hero h1 .line-pink { color: var(--pink); }
+  .hero h1 .line-white { color: var(--text); }
+  .hero h1 .line-purple { color: var(--purple); }
+
+  .hero-sub {
+    font-size: 18px; color: var(--muted); max-width: 540px;
+    margin: 0 auto 48px; font-weight: 300; line-height: 1.6;
+  }
+
+  .search-bar {
+    display: flex; align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: 100px;
+    padding: 6px 6px 6px 24px;
+    width: 100%; max-width: 580px;
+    gap: 12px;
+    transition: border-color .2s;
+  }
+  .search-bar:focus-within {
+    border-color: rgba(230,59,122,0.5);
+    box-shadow: 0 0 0 4px rgba(230,59,122,0.08);
+  }
+  .search-bar input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-size: 15px; font-family: 'Inter', sans-serif;
+  }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-btn {
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    border: none; border-radius: 100px;
+    color: #fff; font-size: 14px; font-weight: 500;
+    padding: 12px 28px; cursor: pointer;
+    white-space: nowrap;
+    transition: opacity .2s;
+  }
+  .search-btn:hover { opacity: 0.85; }
+
+  .hero-hint {
+    margin-top: 20px; font-size: 13px; color: var(--muted);
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center;
+  }
+  .hero-hint span { display: flex; align-items: center; gap: 6px; }
+  .hero-hint .dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--muted); flex-shrink: 0;
+  }
+
+  /* ── SECTIONS ── */
+  section { padding: 96px 5%; max-width: 1200px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 11px; font-weight: 500; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--pink);
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 5vw, 56px);
+    letter-spacing: .03em;
+    margin-bottom: 16px;
+    line-height: 1;
+  }
+  .section-sub { font-size: 17px; color: var(--muted); max-width: 520px; margin-bottom: 56px; }
+
+  /* ── HOW IT WORKS ── */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2px; }
+  .step {
+    background: var(--surface);
+    padding: 32px 28px;
+    border: 1px solid var(--card-border);
+    position: relative;
+    transition: background .2s;
+  }
+  .step:first-child { border-radius: 16px 0 0 16px; }
+  .step:last-child  { border-radius: 0 16px 16px 0; }
+  .step:hover { background: var(--surface2); }
+
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px; line-height: 1;
+    color: rgba(255,255,255,0.06);
+    margin-bottom: 16px;
+  }
+  .step-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px; font-size: 20px;
+  }
+  .step h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .step p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  .step-arrow {
+    position: absolute; right: -14px; top: 50%;
+    transform: translateY(-50%);
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--card-border);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2; font-size: 12px; color: var(--muted);
+  }
+  .step:last-child .step-arrow { display: none; }
+
+  /* ── SOURCES ── */
+  .sources-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .source-card {
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: border-color .2s, transform .2s;
+    position: relative; overflow: hidden;
+  }
+  .source-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+  }
+  .source-card.tmdb::before  { background: linear-gradient(90deg,#01d277,#90cea1); }
+  .source-card.omdb::before  { background: linear-gradient(90deg,#f5c518,#e6a817); }
+  .source-card.jikan::before { background: linear-gradient(90deg,var(--pink),var(--purple)); }
+  .source-card.wiki::before  { background: linear-gradient(90deg,#4d9de0,#3a7cbf); }
+
+  .source-card:hover { border-color: rgba(255,255,255,0.18); transform: translateY(-3px); }
+
+  .source-badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 600; letter-spacing: .06em;
+    padding: 4px 10px; border-radius: 6px; margin-bottom: 16px;
+  }
+  .tmdb  .source-badge { background: rgba(1,210,119,.12);  color: #01d277; }
+  .omdb  .source-badge { background: rgba(245,197,24,.12); color: #f5c518; }
+  .jikan .source-badge { background: rgba(230,59,122,.12); color: var(--pink); }
+  .wiki  .source-badge { background: rgba(77,157,224,.12); color: #4d9de0; }
+
+  .source-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .source-card p  { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+
+  .source-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 11px; color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 9px;
+  }
+
+  /* ── SAMPLE QA ── */
+  .qa-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .qa-card {
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 28px; overflow: hidden;
+  }
+
+  .msg { display: flex; gap: 12px; margin-bottom: 16px; align-items: flex-start; }
+  .msg.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 13px; font-weight: 600;
+  }
+  .avatar.ai   { background: linear-gradient(135deg,var(--pink),var(--purple)); color: #fff; }
+  .avatar.user { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+  .bubble {
+    font-size: 13px; line-height: 1.6; padding: 12px 16px;
+    border-radius: 14px; max-width: calc(100% - 44px);
+  }
+  .user .bubble {
+    background: rgba(123,92,250,.15);
+    border: 1px solid rgba(123,92,250,.2);
+    color: var(--text);
+  }
+  .ai .bubble {
+    background: var(--surface2);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+  }
+  .bubble .src {
+    display: inline-block; font-size: 10px; font-weight: 500;
+    color: var(--pink); margin-top: 8px;
+    letter-spacing: .04em;
+  }
+
+  /* ── VERIFY SECTION ── */
+  .verify-wrap {
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 56px 48px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+  }
+  .verify-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px; line-height: 1.05; margin-bottom: 16px;
+  }
+  .verify-title em { color: var(--pink); font-style: normal; }
+  .verify-p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
+
+  .verify-items { display: flex; flex-direction: column; gap: 16px; }
+  .verify-item { display: flex; align-items: flex-start; gap: 14px; }
+  .vi-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 17px;
+  }
+  .vi-text h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .vi-text p  { font-size: 13px; color: var(--muted); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: .08em;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color .2s; }
+  .footer-links a:hover { color: var(--text); }
+  .footer-copy { font-size: 12px; color: var(--muted); }
+
+  @media (max-width: 768px) {
+    .qa-wrap { grid-template-columns: 1fr; }
+    .verify-wrap { grid-template-columns: 1fr; padding: 36px 28px; }
+    .steps { grid-template-columns: 1fr; }
+    .step:first-child { border-radius: 16px 16px 0 0; }
+    .step:last-child  { border-radius: 0 0 16px 16px; }
+    .step-arrow { display: none; }
+    footer { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">CineAI</div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#sources">Data sources</a>
+    <a href="#examples">Examples</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="orb orb-pink"></div>
+  <div class="orb orb-purple"></div>
+
+  <div class="hero-eyebrow">Powered by RAG + Free APIs</div>
+
+  <h1>
+    <span class="line-pink">MOVIES.</span><br>
+    <span class="line-white">ANIME.</span><br>
+    <span class="line-purple">ANSWERED.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Ask anything about films, TV shows, anime, and manga.
+    Every answer is pulled from a real database — not invented by the AI.
+  </p>
+
+  <div class="search-bar">
+    <input type="text" placeholder='Try "What anime is similar to Death Note?"' id="heroInput">
+    <button class="search-btn">Ask CineAI</button>
+  </div>
+
+  <div class="hero-hint">
+    <span><div class="dot"></div> TMDB</span>
+    <span><div class="dot"></div> OMDb</span>
+    <span><div class="dot"></div> Jikan / MyAnimeList</span>
+    <span><div class="dot"></div> Fully verifiable</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <p class="section-label">The pipeline</p>
+  <h2 class="section-title">How it works</h2>
+  <p class="section-sub">A RAG pipeline — the AI retrieves real data first, then phrases the answer. No hallucinating facts.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon" style="background:rgba(230,59,122,.12)">🎯</div>
+      <h3>You ask a question</h3>
+      <p>Type any movie, anime, or manga question into the chat interface.</p>
+      <div class="step-arrow">›</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon" style="background:rgba(123,92,250,.12)">🔍</div>
+      <h3>Title identified</h3>
+      <p>The system extracts the title and determines if it's a film, TV show, anime, or manga.</p>
+      <div class="step-arrow">›</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon" style="background:rgba(1,210,119,.12)">📡</div>
+      <h3>API is queried</h3>
+      <p>TMDB, OMDb, or Jikan is called. Real structured data (cast, rating, synopsis) comes back.</p>
+      <div class="step-arrow">›</div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-icon" style="background:rgba(245,197,24,.12)">🤖</div>
+      <h3>LLM phrases the answer</h3>
+      <p>The AI writes a clear, natural response — using only the retrieved data. Source cited.</p>
+      <div class="step-arrow">›</div>
+    </div>
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-icon" style="background:rgba(77,157,224,.12)">✅</div>
+      <h3>You can verify it</h3>
+      <p>Check the answer on IMDb, TMDB.org, or MyAnimeList in seconds. Every fact is traceable.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DATA SOURCES -->
+<section id="sources">
+  <p class="section-label">Data sources</p>
+  <h2 class="section-title">Free. Trusted. Checkable.</h2>
+  <p class="section-sub">All data comes from public, well-maintained APIs you can query yourself at any time.</p>
+
+  <div class="sources-grid">
+    <div class="source-card tmdb">
+      <div class="source-badge">TMDB</div>
+      <h3>The Movie Database</h3>
+      <p>A massive, community-maintained database of movies and TV shows — cast, crew, posters, ratings, genres, and release dates. Free API key, no cost.</p>
+      <div class="source-tags">
+        <span class="tag">Movies</span>
+        <span class="tag">TV shows</span>
+        <span class="tag">Cast & crew</span>
+        <span class="tag">Posters</span>
+      </div>
+    </div>
+
+    <div class="source-card omdb">
+      <div class="source-badge">OMDb</div>
+      <h3>Open Movie Database</h3>
+      <p>Provides plot summaries, IMDb ratings, Rotten Tomatoes scores, and IMDb cross-references. Excellent backup and secondary source for film data.</p>
+      <div class="source-tags">
+        <span class="tag">IMDb ratings</span>
+        <span class="tag">RT scores</span>
+        <span class="tag">Plot summaries</span>
+      </div>
+    </div>
+
+    <div class="source-card jikan">
+      <div class="source-badge">Jikan</div>
+      <h3>Jikan / MyAnimeList</h3>
+      <p>Wraps MyAnimeList data as clean JSON. Episode counts, scores, studios, genres, airing status — all without needing an API key. Completely free.</p>
+      <div class="source-tags">
+        <span class="tag">Anime</span>
+        <span class="tag">Manga</span>
+        <span class="tag">Episode counts</span>
+        <span class="tag">No key needed</span>
+      </div>
+    </div>
+
+    <div class="source-card wiki">
+      <div class="source-badge">Wikipedia</div>
+      <h3>Wikipedia API</h3>
+      <p>A fallback for general background info on lesser-known titles. Free, open, and widely used. Good for supplementary context when the main APIs lack detail.</p>
+      <div class="source-tags">
+        <span class="tag">Background info</span>
+        <span class="tag">Fallback source</span>
+        <span class="tag">Open access</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SAMPLE Q&A -->
+<section id="examples">
+  <p class="section-label">See it in action</p>
+  <h2 class="section-title">Sample conversations</h2>
+  <p class="section-sub">Every answer here can be independently checked against the source database in seconds.</p>
+
+  <div class="qa-wrap">
+    <div class="qa-card">
+      <div class="msg user">
+        <div class="avatar user">U</div>
+        <div class="bubble">Who directed Spirited Away?</div>
+      </div>
+      <div class="msg ai">
+        <div class="avatar ai">C</div>
+        <div class="bubble">
+          Spirited Away (2001) was directed by Hayao Miyazaki, the co-founder of Studio Ghibli. The film won the Academy Award for Best Animated Feature in 2003 and holds a score of 8.6 on IMDb.
+          <span class="src">↗ Source: TMDB</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="msg user">
+        <div class="avatar user">U</div>
+        <div class="bubble">How many episodes does Attack on Titan have?</div>
+      </div>
+      <div class="msg ai">
+        <div class="avatar ai">C</div>
+        <div class="bubble">
+          Attack on Titan ran for 4 seasons with a total of 94 episodes. The final season aired in 2023. The series holds a MAL score of 9.0 and is produced by MAPPA (final season) and Wit Studio (earlier seasons).
+          <span class="src">↗ Source: Jikan / MyAnimeList</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="msg user">
+        <div class="avatar user">U</div>
+        <div class="bubble">What should I watch if I liked Parasite (2019)?</div>
+      </div>
+      <div class="msg ai">
+        <div class="avatar ai">C</div>
+        <div class="bubble">
+          Based on Parasite's themes of class tension and dark thriller drama, you might enjoy <em>Oldboy</em> (2003, Park Chan-wook), <em>Memories of Murder</em> (2003, Bong Joon-ho), or <em>The Handmaiden</em> (2016). All score above 8.0 on IMDb.
+          <span class="src">↗ Source: TMDB</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="msg user">
+        <div class="avatar user">U</div>
+        <div class="bubble">What anime is similar to Death Note?</div>
+      </div>
+      <div class="msg ai">
+        <div class="avatar ai">C</div>
+        <div class="bubble">
+          If you liked Death Note's psychological cat-and-mouse dynamic, try <em>Code Geass</em> (MAL: 8.7), <em>Fullmetal Alchemist: Brotherhood</em> (MAL: 9.1), or <em>Monster</em> (MAL: 8.7). All share strategic, morally complex storytelling.
+          <span class="src">↗ Source: Jikan / MyAnimeList</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY IT'S VERIFIABLE -->
+<section>
+  <div class="verify-wrap">
+    <div>
+      <p class="section-label">Why this project</p>
+      <h2 class="verify-title">Every fact is <em>checkable</em> in under 60 seconds</h2>
+      <p class="verify-p">
+        Unlike medical, legal, or financial AI tools — where a wrong answer can have serious consequences — a movie and anime Q&A AI operates in a domain where every single claim is trivially verifiable by any person with a browser.
+      </p>
+      <p class="verify-p">
+        That makes it the perfect sandbox for learning RAG, API integration, and LLM prompt engineering — without the stakes.
+      </p>
+    </div>
+    <div class="verify-items">
+      <div class="verify-item">
+        <div class="vi-icon" style="background:rgba(1,210,119,.12)">🎯</div>
+        <div class="vi-text">
+          <h4>Objective, structured facts</h4>
+          <p>A director's name, an episode count, a release year. No interpretation, no ambiguity.</p>
+        </div>
+      </div>
+      <div class="verify-item">
+        <div class="vi-icon" style="background:rgba(230,59,122,.12)">🌐</div>
+        <div class="vi-text">
+          <h4>Public cross-check</h4>
+          <p>Any answer can be verified on IMDb, TMDB.org, or MyAnimeList.net instantly.</p>
+        </div>
+      </div>
+      <div class="verify-item">
+        <div class="vi-icon" style="background:rgba(123,92,250,.12)">🛡️</div>
+        <div class="vi-text">
+          <h4>Low stakes if wrong</h4>
+          <p>An incorrect episode count causes zero harm. Perfect scope for a learning project.</p>
+        </div>
+      </div>
+      <div class="verify-item">
+        <div class="vi-icon" style="background:rgba(245,197,24,.12)">🔗</div>
+        <div class="vi-text">
+          <h4>Source always cited</h4>
+          <p>Every answer references which API the data came from — traceability by design.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">CineAI</div>
+  <div class="footer-links">
+    <a href="https://www.themoviedb.org/documentation/api" target="_blank">TMDB API</a>
+    <a href="https://www.omdbapi.com/" target="_blank">OMDb API</a>
+    <a href="https://jikan.moe/" target="_blank">Jikan API</a>
+    <a href="https://github.com/" target="_blank">GitHub</a>
+  </div>
+  <div class="footer-copy">For educational & demonstration purposes only.</div>
+</footer>
+
+<script>
+  document.querySelector('.search-btn').addEventListener('click', function() {
+    const val = document.getElementById('heroInput').value.trim();
+    if (!val) return;
+    alert('CineAI says: This is a demo UI — connect the backend to see live answers!\n\nYou asked: "' + val + '"');
+  });
+  document.getElementById('heroInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.querySelector('.search-btn').click();
+  });
+</script>
+</body>
+</html>
