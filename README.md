@@ -4,7 +4,7 @@ A conversational AI that answers questions about **movies, TV shows, anime, and 
 
 > Ask things like *"Who directed Spirited Away?"*, *"How many episodes does Attack on Titan have?"*, or *"Recommend an anime like Death Note"* and get an answer backed by an actual source link.
 
-Demo landing page: [moan-rag.pages.dev](https://moan-rag.pages.dev/) — the chat app runs with `streamlit run app.py`.
+Demo: [moan-rag.pages.dev](https://moan-rag.pages.dev/) — a live chat demo powered by **Cloudflare Pages Functions** (no keys needed). The full-featured UI runs with `streamlit run app.py`.
 
 ---
 
@@ -48,14 +48,15 @@ Answer + Citations → chat UI / CLI
 moan-rag/
 ├── app.py                 # Streamlit chat UI (the fun part)
 ├── cli.py                 # Terminal demo — no UI needed
-├── moan/                  # core package
+├── moan/                  # core Python package
 │   ├── extract.py         # question → title / media / intent
 │   ├── apis.py            # Jikan · TVMaze · TMDB · OMDb wrappers
 │   ├── context.py         # records → context block + source citations
 │   ├── generate.py        # grounded LLM call + zero-key template answer
 │   └── pipeline.py        # parse → retrieve → context → generate
+├── functions/api/ask.js   # Cloudflare Pages Function — the serverless demo backend (JS twin of moan/)
+├── index.html             # demo chat page (deployed at /)
 ├── tests/test_pipeline.py # offline tests (no network, no keys)
-├── index.html             # CineAI landing page (deployed at /)
 ├── requirements.txt
 └── .env.example           # optional keys (TMDB / OMDb / LLM)
 ```
@@ -111,6 +112,33 @@ Offline unit tests — no network, no keys:
 
 ```bash
 python -m tests.test_pipeline     # or: pytest
+```
+
+## Deploy the Demo (Cloudflare Pages — ~30 seconds)
+
+The demo chat page + serverless backend deploy as **static HTML + Pages Functions** — no build step, no server to babysit.
+
+**Option A — Git connect (recommended)**
+
+1. Make sure this repo is pushed to GitHub (`pradhanska/MoAn-RAG`).
+2. Cloudflare dashboard → **Workers & Pages → Create → Pages** → connect the repo.
+3. Settings: framework preset **None**, build command **empty**, output directory **`.`** (the repo root — `index.html` lives there).
+4. Functions are picked up automatically from `functions/`. Hit **Deploy** — `https://moan-rag.pages.dev` now runs the live chat demo.
+
+Optional: add `TMDB_API_KEY` / `OMDB_API_KEY` as **environment variables** in the Pages project settings to unlock full movie coverage (directors, cast, ratings).
+
+**Option B — wrangler CLI**
+
+```bash
+npx wrangler login
+npx wrangler pages deploy . --project-name moan-rag
+```
+
+**Test it locally**
+
+```bash
+npx wrangler pages dev .
+# → http://localhost:8788  (chat page + /api/ask function)
 ```
 
 ## Sample Questions
