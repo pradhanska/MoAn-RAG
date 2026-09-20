@@ -1,19 +1,18 @@
-# Movie & Anime Q&A AI
+# CineAI — Movie & Anime Q&A
 
-A conversational AI that answers questions about **movies, TV shows, anime, and manga** using free public APIs. Built on a **Retrieval-Augmented Generation (RAG)** pipeline, so every answer is grounded in real, verifiable data instead of LLM guesswork.
+A conversational AI that answers questions about **movies, TV shows, anime, and manga** — grounded in real, verifiable data instead of LLM guesswork.
 
-> Ask things like *"Who directed Spirited Away?"*, *"How many episodes does Attack on Titan have?"*, or *"What anime should I watch if I liked Death Note?"* and get an answer backed by an actual source.
+> Ask things like *"Who directed Spirited Away?"*, *"How many episodes does Attack on Titan have?"*, or *"Recommend an anime like Death Note"* and get an answer backed by an actual source link.
 
-Demo: [CLICK HERE](https://moan-rag.pages.dev/)
+Demo landing page: [moan-rag.pages.dev](https://moan-rag.pages.dev/) — the chat app runs with `streamlit run app.py`.
+
 ---
 
 ## Why This Project?
 
-Most LLMs answer from memory, which means they can hallucinate facts, go stale after their training cutoff, and give you no way to check if they're right.
+Most LLMs answer from memory, which means they can **hallucinate facts**, go stale after their training cutoff, and give you no way to verify what they said.
 
-This project fixes that by following a simple rule: **look it up first, then let the AI just phrase the answer.** Every fact returned (director, episode count, rating, release year) is pulled live from a public database and can be independently verified on IMDb, TMDB.org, or MyAnimeList.net.
-
----
+CineAI follows one simple rule: **look it up first, then let the AI phrase the answer.** Every fact returned (director, episode count, rating, release year, recommendations) is pulled live from a public database and can be independently verified on IMDb, TMDB.org, MyAnimeList.net or TVMaze — with the source link printed right next to the answer.
 
 ## How It Works (RAG Pipeline)
 
@@ -21,148 +20,119 @@ This project fixes that by following a simple rule: **look it up first, then let
 User Question
       │
       ▼
-Identify Title / Media Type
+Entity Extraction → title + media type + intent
       │
       ▼
-Query the Right API (TMDB / OMDb / Jikan)
+Retrieval → Jikan · TVMaze · TMDB · OMDb (live APIs)
       │
       ▼
-Structured Data Returned (JSON)
+Context Block → structured facts + source URLs
       │
       ▼
-Format Data as Context
+Generation → grounded LLM answer  (or local template, zero keys)
       │
       ▼
-LLM Prompt: "Answer using ONLY this context"
-      │
-      ▼
-Natural-Language Answer + Source Citation
-      │
-      ▼
-Chat UI
+Answer + Citations → chat UI / CLI
 ```
 
-1. **User asks a question** through the chat interface.
-2. **Entity extraction** identifies the title and likely media type (movie, TV show, anime, manga).
-3. **The right API is queried**:
-   - Movies/TV → TMDB or OMDb
-   - Anime/Manga → Jikan
-4. **Structured data is formatted into context** (e.g. director, cast, release year, rating).
-5. **The LLM receives the context + question** and is instructed to answer only from that data — preventing hallucination.
-6. **A natural-language answer is generated**, with the source cited.
-7. **The answer is returned to the chat UI.**
+1. **You ask a question** — *"how many episodes does attack on titan have"*
+2. **Entity extraction** picks the title, the media type (anime / TV / movie), and the intent (fact / recommendation).
+3. **The right sources are queried**: Jikan & TVMaze need **no API keys**; TMDB & OMDb activate automatically when you add keys.
+4. **Retrieved facts are formatted into a context block** (rating, status, episodes, genres, synopsis, link).
+5. **A grounded answer is generated** — strictly from that context. Without an LLM key, a local template assembles the answer from the same facts, so the app is fully usable out of the box.
+6. **Sources are cited** beside every answer. Nothing is invented.
 
----
+## Project Layout
 
-## Tech Stack
-
-| Component | Tool / Service | Notes |
-|---|---|---|
-| LLM (answer generation) | Claude / Gemini / Groq (Llama 3) / Ollama | Free tiers or fully local |
-| Movie/TV data | [TMDB API](https://www.themoviedb.org/documentation/api), [OMDb API](https://www.omdbapi.com/) | Free API keys required |
-| Anime/Manga data | [Jikan API](https://jikan.moe/) | No API key needed |
-| Frontend | Streamlit or Gradio | Free, fast to build |
-| Hosting | Hugging Face Spaces / Streamlit Cloud | Free tier deployment |
-| Optional vector store | Chroma / FAISS | Only needed for large local datasets |
-
----
-
-## Project Scope
-
-**In scope:**
-- Lookup of movies, TV shows, anime, manga (cast, crew, plot, ratings, release dates, genres)
-- Genre/mood-based recommendations
-- Trivia-style Q&A
-- Comparison queries between titles
-
-**Out of scope:**
-- Streaming/piracy links — metadata only, no content access
-- Subjective "best ever" claims stated as fact
-- Real-time box office or streaming-availability data
-
----
-
-## Why This Topic Is Easy to Verify
-
-- Every fact (release year, episode count, director, rating) is a single, objective data point — no interpretation needed.
-- Anyone can cross-check the same title on IMDb, TMDB, or MyAnimeList in a browser.
-- Unlike medical, legal, or financial topics, an incorrect answer here carries no real-world risk — making it a safe, demonstrable sandbox for learning RAG and LLM prompting.
-
----
+```
+moan-rag/
+├── app.py                 # Streamlit chat UI (the fun part)
+├── cli.py                 # Terminal demo — no UI needed
+├── moan/                  # core package
+│   ├── extract.py         # question → title / media / intent
+│   ├── apis.py            # Jikan · TVMaze · TMDB · OMDb wrappers
+│   ├── context.py         # records → context block + source citations
+│   ├── generate.py        # grounded LLM call + zero-key template answer
+│   └── pipeline.py        # parse → retrieve → context → generate
+├── tests/test_pipeline.py # offline tests (no network, no keys)
+├── index.html             # CineAI landing page (deployed at /)
+├── requirements.txt
+└── .env.example           # optional keys (TMDB / OMDb / LLM)
+```
 
 ## Getting Started
 
-### 1. Prerequisites
-- Python 3.9+
-- Free API keys:
-  - [TMDB API key](https://www.themoviedb.org/settings/api)
-  - [OMDb API key](https://www.omdbapi.com/apikey.aspx)
-- An LLM API key (Claude, Gemini, or Groq) — or [Ollama](https://ollama.com/) installed locally for a fully free, offline option
-
-### 2. Installation
 ```bash
-git clone <repo-url>
-cd movie-anime-qa-ai
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-```
 
-### 3. Environment variables
-Create a `.env` file:
-```
-TMDB_API_KEY=your_tmdb_key
-OMDB_API_KEY=your_omdb_key
-LLM_API_KEY=your_llm_key
-```
+# try it in the terminal right away (no keys needed)
+python cli.py "how many episodes does Attack on Titan have"
+python cli.py "recommend an anime like Death Note"
 
-### 4. Run the app
-```bash
+# or open the chat UI
 streamlit run app.py
 ```
 
----
+It works instantly with **zero API keys** — anime and TV data come from Jikan and TVMaze, and answers are generated locally from the retrieved facts.
 
-## Project Structure
+## Data Sources
+
+| Source | Covers | Key needed? |
+| --- | --- | --- |
+| [Jikan](https://jikan.moe/) (MyAnimeList) | Anime · manga · recommendations · directors | ❌ free |
+| [TVMaze](https://www.tvmaze.com/api) | TV shows · seasons · episodes | ❌ free |
+| [TMDB](https://www.themoviedb.org/settings/api) | Movies · TV (full profiles) | ✅ `TMDB_API_KEY` |
+| [OMDb](https://www.omdbapi.com/apikey.aspx) | Movies (director · cast · IMDb rating) | ✅ `OMDB_API_KEY` |
+
+Copy `.env.example` to `.env` and add keys to unlock movie-grade answers:
+
+```bash
+cp .env.example .env   # then fill in TMDB_API_KEY / OMDB_API_KEY
 ```
-movie-anime-qa-ai/
-├── app.py              # Streamlit chat UI
-├── apis/
-│   ├── tmdb.py          # TMDB API wrapper
-│   ├── omdb.py          # OMDb API wrapper
-│   └── jikan.py         # Jikan (anime/manga) API wrapper
-├── llm/
-│   └── generate.py       # Prompt construction + LLM calls
-├── requirements.txt
-├── .env.example
-└── README.md
+
+## LLM (optional)
+
+Any **OpenAI-compatible** endpoint works — no SDK required:
+
+```bash
+# Groq (fast, free tier)
+LLM_API_KEY=…            LLM_BASE_URL=https://api.groq.com/openai/v1
+
+# Local Ollama
+LLM_BASE_URL=http://localhost:11434/v1
 ```
 
----
+Without a key, answers come from the built-in grounded template engine. Either way the answer is built **only from the retrieved context** — the LLM is a phrasing layer, never the source of truth.
 
-## Evaluation / Testing
+## Tests
 
-- **Accuracy testing**: Run a fixed set of test questions and manually confirm answers against the source API/site.
-- **Recommendation testing**: Check that suggested titles genuinely share genre/theme with the reference title.
-- **Edge case testing**: Confirm the system says *"I couldn't find that title"* rather than guessing when a title isn't found.
+Offline unit tests — no network, no keys:
 
----
+```bash
+python -m tests.test_pipeline     # or: pytest
+```
 
-## Limitations
+## Sample Questions
 
-- Free-tier API rate limits may restrict query volume during heavy testing.
-- Very new or obscure titles may have incomplete data in free databases.
-- Recommendation quality depends on how well genre/tag metadata is structured in the source APIs.
+```
+who directed Spirited Away?                  → TMDB/OMDb + Jikan
+how many episodes does Attack on Titan have? → Jikan / TVMaze
+how many seasons does Breaking Bad have?     → TVMaze
+recommend an anime like Death Note           → MyAnimeList recommendations
+what is One Piece about?                     → Jikan / TVMaze
+```
 
----
+## Roadmap
 
-## Roadmap Ideas
-
-- Add streaming-availability lookup via a dedicated API
-- Add poster/image rendering in the chat UI
-- Add a local vector store (Chroma/FAISS) for caching frequently asked titles
-- Support multi-title comparison queries natively
-
----
+- [x] Keyless anime + TV retrieval (Jikan, TVMaze)
+- [x] Local grounded answer engine (zero keys)
+- [x] Optional OpenAI-compatible LLM layer
+- [x] Streamlit chat UI + terminal CLI + tests
+- [ ] Movie search UX without keys (embedded lightweight dataset)
+- [ ] Chat memory & follow-up questions
+- [ ] One-click deploy to Cloudflare Pages
 
 ## License
 
-This project is for educational/demonstration purposes. All data is sourced from third-party public APIs (TMDB, OMDb, Jikan/MyAnimeList) — please review each provider's terms of use before deploying publicly.
+MIT — build on it, remix it, ship it.
