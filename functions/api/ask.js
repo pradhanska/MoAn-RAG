@@ -276,7 +276,8 @@ function templateAnswer(records, question, intent) {
         if (r.reason) bit += ` — ${truncate(r.reason.trim(), 110)}`;
         return bit;
       });
-      return `If you liked ${name}, you might enjoy: ${bits.join("; ")}. Each pick is a verified MyAnimeList recommendation — tap the sources for details.`;
+      const via = "MyAnimeList";
+      return `If you liked ${name}, you might enjoy: ${bits.join("; ")}. Each pick is a verified ${via} recommendation — tap the sources for details.`;
     }
     return `I found ${name} but no verified recommendations were available for it.`;
   }
@@ -348,7 +349,11 @@ async function ask(question, mode, env) {
     try { batch = await providers[label](); } catch { batch = []; }
     if (batch.length) { chosen = batch; break; }
   }
-  if (chosen) records.push(...chosen);
+  if (chosen) {
+    // jikanSearch embeds MyAnimeList recommendations when intent is "recommend";
+    // every other provider answers with the grounded fact template as-is.
+    records.push(...chosen);
+  }
 
   if (!records.length) {
     let msg = `I couldn't find "${query.title}" in the movie/anime databases. Double-check the spelling — or add TMDB/OMDb keys for fuller movie/TV coverage.`;

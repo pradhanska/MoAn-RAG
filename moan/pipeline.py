@@ -72,7 +72,7 @@ def retrieve(query: Query) -> tuple[list[dict], list[str]]:
             except Exception:
                 pass
 
-    # anime recommendations from MyAnimeList when asked for a recommendation
+    # recommendations — MyAnimeList via Jikan (honest “not available” when MAL is down)
     if records and query.intent == "recommend":
         top = records[0]
         if top.get("provider") == "jikan" and top.get("mal_id"):

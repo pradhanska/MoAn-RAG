@@ -146,6 +146,7 @@ def tvmaze_search(query: str, want_episodes: bool = False) -> list[dict]:
         "title": show.get("name", ""),
         "year": _year_from(show.get("premiered")),
         "url": show.get("url", ""),
+        "mal_id": None,
         "score": _num(show.get("rating", {}).get("average")),
         "episodes": episodes,
         "seasons": seasons,
@@ -154,6 +155,7 @@ def tvmaze_search(query: str, want_episodes: bool = False) -> list[dict]:
         "overview": show.get("summary") and _strip_tags(show["summary"]),
         "director": None,
         "cast": [],
+        "reason": None,
     }]
 
 
